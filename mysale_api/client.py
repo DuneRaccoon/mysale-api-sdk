@@ -14,9 +14,11 @@ from .resources import (
     SKU,
     Product,
     Taxonomy,
-    Shipping
+    Shipping,
+    Order,
+    Returns
 )
-from .throttler import throttle, async_throttle
+from .throttler import throttler, async_throttler
 
 logger = logging.getLogger(__name__)
 
@@ -53,6 +55,8 @@ class BaseMySaleClient:
         self.products = Product(client=self)
         self.taxonomy = Taxonomy(client=self)
         self.shipping = Shipping(client=self)
+        self.orders = Order(client=self)
+        self.returns = Returns(client=self)
 
     def _get_auth_headers(self) -> Dict[str, str]:
         """Generate authorization headers for MySale API."""
@@ -81,7 +85,7 @@ class MySaleClient(BaseMySaleClient):
         super().__init__(*args, **kwargs)
         self._client = httpx.Client(base_url=self.base_url, timeout=self.timeout)
 
-    @throttle()
+    @throttler.throttle()
     def _make_request_sync(
         self,
         method: str,
@@ -174,7 +178,7 @@ class MySaleAsyncClient(BaseMySaleClient):
         super().__init__(*args, **kwargs)
         self._client = httpx.AsyncClient(base_url=self.base_url, timeout=self.timeout)
 
-    @async_throttle()
+    @async_throttler.throttle()
     async def _make_request_async(
         self,
         method: str,

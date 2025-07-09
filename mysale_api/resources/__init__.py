@@ -5,6 +5,8 @@ from .sku import SKU
 from .product import Product
 from .taxonomy import Taxonomy
 from .shipping import Shipping
+from .order import Order
+from .returns import Returns
 
 __all__ = [
     "MySaleResource",
@@ -12,5 +14,7 @@ __all__ = [
     "SKU",
     "Product", 
     "Taxonomy",
-    "Shipping"
+    "Shipping",
+    "Order",
+    "Returns"
 ]

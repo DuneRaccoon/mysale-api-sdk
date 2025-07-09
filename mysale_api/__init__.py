@@ -9,7 +9,9 @@ from .exceptions import (
     RateLimitError,
     ServerError,
     ConflictError,
-    UnprocessableEntityError
+    UnprocessableEntityError,
+    ForbiddenError,
+    BadRequestError
 )
 
 __version__ = "1.0.0"
@@ -23,5 +25,7 @@ __all__ = [
     "RateLimitError",
     "ServerError",
     "ConflictError",
-    "UnprocessableEntityError"
+    "UnprocessableEntityError",
+    "ForbiddenError",
+    "BadRequestError"
 ]
