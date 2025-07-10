@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
 """
-Example: Complete MySale Integration Workflow
+Example: Complete MySale Integration Workflow with Enhanced Instance Methods
 
 This comprehensive example demonstrates a complete workflow using the MySale API SDK:
-1. Set up product catalog (taxonomy, products, SKUs)
-2. Manage orders and fulfillment
-3. Handle returns and customer service
+1. Set up product catalog (taxonomy, products, SKUs) using collection and instance methods
+2. Manage orders and fulfillment using instance methods
+3. Handle returns and customer service using instance methods
 4. Monitor and optimize operations
 
-This example showcases how all components work together in a real-world scenario.
+This example showcases how all components work together in a real-world scenario
+using the enhanced instance-based API for cleaner, more intuitive code.
 """
 
 import asyncio
@@ -24,7 +25,7 @@ API_TOKEN = "your_api_token_here"
 
 
 class MySaleIntegration:
-    """Complete MySale integration workflow manager."""
+    """Complete MySale integration workflow manager with enhanced instance methods."""
     
     def __init__(self, api_token: str):
         self.client = MySaleClient(api_token=api_token)
@@ -37,8 +38,8 @@ class MySaleIntegration:
         await self.async_client.close()
     
     def setup_product_catalog(self):
-        """Set up a complete product catalog with taxonomy, products, and SKUs."""
-        print("🏪 Setting up product catalog...")
+        """Set up a complete product catalog using enhanced instance methods."""
+        print("🏪 Setting up product catalog with enhanced instance methods...")
         
         # Step 1: Explore taxonomy to find suitable categories
         print("\n1️⃣ Finding suitable product categories...")
@@ -54,8 +55,8 @@ class MySaleIntegration:
             print("   ❌ No clothing categories found, using placeholder")
             taxonomy_id = uuid4()  # Placeholder
         
-        # Step 2: Create SKUs for our products
-        print("\n2️⃣ Creating product SKUs...")
+        # Step 2: Create SKUs for our products using collection methods
+        print("\n2️⃣ Creating product SKUs using collection methods...")
         
         sku_variants = [
             {"id": "TSHIRT-PREMIUM-BLACK-S", "name": "Premium T-Shirt - Black Small", "size": "S", "color": "Black"},
@@ -65,6 +66,8 @@ class MySaleIntegration:
             {"id": "TSHIRT-PREMIUM-NAVY-M", "name": "Premium T-Shirt - Navy Medium", "size": "M", "color": "Navy"},
             {"id": "TSHIRT-PREMIUM-NAVY-L", "name": "Premium T-Shirt - Navy Large", "size": "L", "color": "Navy"},
         ]
+        
+        created_sku_instances = []
         
         for variant in sku_variants:
             try:
@@ -86,24 +89,20 @@ class MySaleIntegration:
                     size=variant["size"]
                 )
                 
+                # Collection method for creation
                 new_sku = self.client.skus.create_sku(sku_data)
+                created_sku_instances.append(new_sku)
                 self.created_skus.append(new_sku.merchant_sku_id)
                 print(f"   ✅ Created SKU: {variant['id']}")
                 
-                # Set pricing
-                self._set_sku_pricing(variant["id"])
-                
-                # Set inventory
-                self._set_sku_inventory(variant["id"])
-                
-                # Enable for sale
-                self.client.skus.enable(variant["id"])
+                # Now use instance methods for configuration
+                self._configure_sku_using_instance_methods(new_sku)
                 
             except Exception as e:
                 print(f"   ❌ Error creating SKU {variant['id']}: {e}")
         
-        # Step 3: Create products to group SKUs
-        print("\n3️⃣ Creating products...")
+        # Step 3: Create products to group SKUs using collection and instance methods
+        print("\n3️⃣ Creating products using collection and instance methods...")
         
         # Group by color
         color_groups = {}
@@ -112,6 +111,8 @@ class MySaleIntegration:
             if color not in color_groups:
                 color_groups[color] = []
             color_groups[color].append(variant)
+        
+        created_product_instances = []
         
         for color, variants in color_groups.items():
             try:
@@ -132,18 +133,25 @@ class MySaleIntegration:
                     skus=[ProductSKU(merchant_sku_id=v["id"]) for v in variants]
                 )
                 
+                # Collection method for creation
                 new_product = self.client.products.create_product(product_data)
+                created_product_instances.append(new_product)
                 self.created_products.append(new_product.merchant_product_id)
                 print(f"   ✅ Created product: {color} T-Shirt ({len(variants)} variants)")
+                
+                # Enhance product description using instance method
+                self._enhance_product_using_instance_methods(new_product, color)
                 
             except Exception as e:
                 print(f"   ❌ Error creating product for {color}: {e}")
         
         print(f"✅ Catalog setup completed: {len(self.created_skus)} SKUs, {len(self.created_products)} products")
+        print("   Used enhanced instance methods for SKU and product configuration!")
     
-    def _set_sku_pricing(self, merchant_sku_id: str):
-        """Set pricing for a SKU."""
+    def _configure_sku_using_instance_methods(self, sku):
+        """Configure a SKU using instance methods."""
         try:
+            # Set pricing using instance method
             price_data = SKUPrices(
                 prices=SKUPrice(
                     cost=PriceValue(currency="AUD", value=Decimal("15.00")),
@@ -151,28 +159,55 @@ class MySaleIntegration:
                     rrp=PriceValue(currency="AUD", value=Decimal("39.99"))
                 )
             )
-            self.client.skus.upload_prices(merchant_sku_id, price_data)
-        except Exception as e:
-            print(f"     ⚠️ Error setting pricing for {merchant_sku_id}: {e}")
-    
-    def _set_sku_inventory(self, merchant_sku_id: str):
-        """Set inventory for a SKU."""
-        try:
+            sku.upload_prices(price_data)  # Instance method!
+            
+            # Set inventory using instance method
             inventory_data = SKUInventory(
                 inventory=[
                     LocationQuantity(location="Main Warehouse", quantity=100),
                     LocationQuantity(location="Store Front", quantity=25)
                 ]
             )
-            self.client.skus.upload_inventory(merchant_sku_id, inventory_data)
+            sku.upload_inventory(inventory_data)  # Instance method!
+            
+            # Enable for sale using instance method
+            sku.enable_sku()  # Instance method!
+            
         except Exception as e:
-            print(f"     ⚠️ Error setting inventory for {merchant_sku_id}: {e}")
+            print(f"     ⚠️ Error configuring SKU {sku.merchant_sku_id} using instance methods: {e}")
+    
+    def _enhance_product_using_instance_methods(self, product, color):
+        """Enhance a product using instance methods."""
+        try:
+            # Update product with enhanced description using instance method
+            enhanced_description = product.description + f"""
+            
+            <h3>Style Guide for {color}:</h3>
+            <p>This {color.lower()} t-shirt pairs perfectly with:</p>
+            <ul>
+                <li>Casual jeans for everyday wear</li>
+                <li>Dress pants for smart-casual looks</li>
+                <li>Shorts for summer comfort</li>
+                <li>Layering under jackets and cardigans</li>
+            </ul>
+            
+            <h3>Care Instructions:</h3>
+            <p>Machine wash cold, tumble dry low, iron inside out if needed.</p>
+            """
+            
+            update_data = ProductWrite(description=enhanced_description)
+            product.update(update_data)  # Instance method!
+            
+            print(f"     ✅ Enhanced {color} product description using instance method")
+            
+        except Exception as e:
+            print(f"     ⚠️ Error enhancing product {product.merchant_product_id}: {e}")
     
     def process_order_workflow(self):
-        """Demonstrate complete order processing workflow."""
-        print("\n📦 Processing order workflow...")
+        """Demonstrate complete order processing workflow using instance methods."""
+        print("\n📦 Processing order workflow with instance methods...")
         
-        # Step 1: Get new orders
+        # Step 1: Get new orders using collection method
         print("\n1️⃣ Retrieving new orders...")
         try:
             new_orders = self.client.orders.list_new_orders(limit=5)
@@ -184,15 +219,15 @@ class MySaleIntegration:
             
             # Process first order as example
             order_summary = new_orders[0]
-            order = self.client.orders.get_order(str(order_summary.order_id))
+            order = self.client.orders.get_order(str(order_summary.order_id))  # Collection method
             print(f"   Processing order: {order.customer_order_reference}")
             
         except Exception as e:
             print(f"   ❌ Error retrieving orders: {e}")
             return
         
-        # Step 2: Validate and acknowledge order
-        print("\n2️⃣ Acknowledging order...")
+        # Step 2: Acknowledge order using instance method
+        print("\n2️⃣ Acknowledging order using instance method...")
         try:
             acknowledgement = OrderAcknowledgement(
                 merchant_order_id=f"INT-{order.customer_order_reference}-{datetime.now().strftime('%Y%m%d')}",
@@ -205,20 +240,23 @@ class MySaleIntegration:
                 ]
             )
             
-            self.client.orders.acknowledge_order(str(order.order_id), acknowledgement)
-            print(f"   ✅ Order acknowledged")
+            # Instance method - cleaner API!
+            order.acknowledge(acknowledgement)
+            print(f"   ✅ Order acknowledged using instance method")
             
         except Exception as e:
-            print(f"   ❌ Error acknowledging order: {e}")
+            print(f"   ❌ Error acknowledging order using instance method: {e}")
         
-        # Step 3: Check inventory and create shipment
-        print("\n3️⃣ Processing fulfillment...")
+        # Step 3: Check inventory and create shipment using instance methods
+        print("\n3️⃣ Processing fulfillment using instance methods...")
         try:
-            # Check if we have inventory for all items
+            # Check if we have inventory for all items using instance methods
             can_fulfill = True
             for item in order.order_items:
                 try:
-                    inventory = self.client.skus.get_inventory(item.merchant_sku_id)
+                    # Get SKU instance and check inventory using instance method
+                    sku = self.client.skus.get_by_merchant_id(item.merchant_sku_id)
+                    inventory = sku.get_inventory()  # Instance method!
                     total_qty = sum(loc.quantity for loc in inventory.inventory)
                     if total_qty < item.sku_qty:
                         print(f"   ⚠️ Insufficient inventory for {item.merchant_sku_id}: need {item.sku_qty}, have {total_qty}")
@@ -227,7 +265,7 @@ class MySaleIntegration:
                     print(f"   ⚠️ Could not check inventory for {item.merchant_sku_id}")
             
             if can_fulfill:
-                # Create shipment
+                # Create shipment using instance method
                 shipment_data = ShipmentCreate(
                     merchant_shipment_id=f"SHIP-{order.customer_order_reference}",
                     tracking_number=f"TR{datetime.now().strftime('%Y%m%d%H%M%S')}",
@@ -245,8 +283,9 @@ class MySaleIntegration:
                     ]
                 )
                 
-                shipment_id = self.client.orders.create_shipment(str(order.order_id), shipment_data)
-                print(f"   ✅ Shipment created: {shipment_id}")
+                # Instance method - cleaner API!
+                shipment_id = order.create_shipment(shipment_data)
+                print(f"   ✅ Shipment created using instance method: {shipment_id}")
             else:
                 print("   ❌ Cannot fulfill order due to inventory issues")
                 
@@ -254,10 +293,10 @@ class MySaleIntegration:
             print(f"   ❌ Error processing fulfillment: {e}")
     
     def handle_returns_workflow(self):
-        """Demonstrate returns processing workflow."""
-        print("\n🔄 Processing returns workflow...")
+        """Demonstrate returns processing workflow using instance methods."""
+        print("\n🔄 Processing returns workflow with instance methods...")
         
-        # Step 1: Get pending returns
+        # Step 1: Get pending returns using collection method
         print("\n1️⃣ Retrieving pending returns...")
         try:
             pending_returns = self.client.returns.list_pending_returns(limit=3)
@@ -269,15 +308,15 @@ class MySaleIntegration:
             
             # Process first return as example
             return_summary = pending_returns[0]
-            return_detail = self.client.returns.get_return(str(return_summary.id))
+            return_detail = self.client.returns.get_return(str(return_summary.id))  # Collection method
             print(f"   Processing return: {return_detail.ran}")
             
         except Exception as e:
             print(f"   ❌ Error retrieving returns: {e}")
             return
         
-        # Step 2: Update return with tracking info
-        print("\n2️⃣ Updating return information...")
+        # Step 2: Update return using instance method
+        print("\n2️⃣ Updating return information using instance method...")
         try:
             update_data = ReturnUpdate(
                 merchant_return_id=f"RET-{return_detail.ran}",
@@ -285,22 +324,23 @@ class MySaleIntegration:
                       f"Reason: {return_detail.reason_for_return}"
             )
             
-            self.client.returns.update_return(str(return_detail.id), update_data)
-            print(f"   ✅ Return information updated")
+            # Instance method - cleaner API!
+            return_detail.update_return(update_data)
+            print(f"   ✅ Return information updated using instance method")
             
         except Exception as e:
-            print(f"   ❌ Error updating return: {e}")
+            print(f"   ❌ Error updating return using instance method: {e}")
         
-        # Step 3: Make approval decision (demo only - don't actually process)
-        print("\n3️⃣ Making approval decision...")
+        # Step 3: Make approval decision using instance methods (demo only)
+        print("\n3️⃣ Making approval decision using instance methods...")
         try:
             if return_detail.total_amount and return_detail.total_amount.amount < 50:
-                print(f"   💰 Low-value return (${return_detail.total_amount.amount}) - would auto-approve")
-                # self.client.returns.approve_return(str(return_detail.id))
+                print(f"   💰 Low-value return (${return_detail.total_amount.amount}) - would auto-approve using instance method")
+                # return_detail.approve()  # Instance method!
             else:
                 print(f"   🔍 High-value return - would require manual review")
             
-            # Create customer communication ticket
+            # Create customer communication ticket using instance method
             ticket_data = TicketCreate(
                 message="Thank you for your return request. We have received your items and are processing your return. "
                        "You will receive an update within 24-48 hours.",
@@ -308,8 +348,8 @@ class MySaleIntegration:
             )
             
             # Note: Actual ticket creation commented out for demo
-            # self.client.returns.create_ticket_from_return(str(return_detail.id), ticket_data)
-            print(f"   ✅ Customer communication prepared")
+            # return_detail.create_ticket(ticket_data)  # Instance method!
+            print(f"   ✅ Customer communication prepared (instance method available)")
             
         except Exception as e:
             print(f"   ❌ Error processing return decision: {e}")
@@ -397,8 +437,8 @@ class MySaleIntegration:
             print(f"   ❌ Error analyzing shipping: {e}")
     
     async def async_operations_demo(self):
-        """Demonstrate async operations for high-performance scenarios."""
-        print("\n🚀 Demonstrating async operations...")
+        """Demonstrate async operations with instance methods for high-performance scenarios."""
+        print("\n🚀 Demonstrating async operations with instance methods...")
         
         try:
             # Concurrent data retrieval
@@ -423,11 +463,11 @@ class MySaleIntegration:
             if not isinstance(shipping_coverage, Exception):
                 print(f"     Shipping policies: {shipping_coverage['total_policies']}")
             
-            # Batch processing simulation
-            print("\n2️⃣ Batch processing simulation...")
+            # Batch processing simulation using async instance methods
+            print("\n2️⃣ Batch processing with async instance methods...")
             
             if not isinstance(new_orders, Exception) and new_orders:
-                # Process multiple orders concurrently
+                # Process multiple orders concurrently using async instance methods
                 order_detail_tasks = [
                     self.async_client.orders.get_order_async(str(order.order_id))
                     for order in new_orders[:3]
@@ -437,35 +477,97 @@ class MySaleIntegration:
                 
                 processed_count = sum(1 for order in detailed_orders if not isinstance(order, Exception))
                 print(f"     Processed {processed_count} orders concurrently")
+                
+                # Demonstrate async instance methods on orders
+                for order in detailed_orders:
+                    if not isinstance(order, Exception):
+                        try:
+                            # Get shipments using async instance method
+                            shipments = await order.get_shipments_async()
+                            print(f"     Order {order.customer_order_reference}: {len(shipments.shipments)} shipments (async instance method)")
+                        except Exception as e:
+                            print(f"     Could not get shipments for order {order.customer_order_reference}: {e}")
             
-            print("   ✅ Async operations completed successfully")
+            # Demonstrate async instance methods with SKUs
+            print("\n3️⃣ SKU operations with async instance methods...")
+            
+            if self.created_skus:
+                try:
+                    # Get a few SKU instances and use async instance methods
+                    sku_tasks = [
+                        self.async_client.skus.get_by_merchant_id_async(sku_id)
+                        for sku_id in self.created_skus[:3]
+                    ]
+                    
+                    sku_instances = await asyncio.gather(*sku_tasks, return_exceptions=True)
+                    
+                    for sku in sku_instances:
+                        if not isinstance(sku, Exception):
+                            try:
+                                # Get inventory using async instance method
+                                inventory = await sku.get_inventory_async()
+                                total_qty = sum(loc.quantity for loc in inventory.inventory)
+                                print(f"     SKU {sku.merchant_sku_id}: {total_qty} total units (async instance method)")
+                            except Exception as e:
+                                print(f"     Could not get inventory for SKU {sku.merchant_sku_id}: {e}")
+                
+                except Exception as e:
+                    print(f"     Error in SKU async operations: {e}")
+            
+            # Demonstrate async instance methods with products
+            print("\n4️⃣ Product operations with async instance methods...")
+            
+            if self.created_products:
+                try:
+                    # Get a product instance and use async instance methods
+                    product = await self.async_client.products.get_by_merchant_id_async(self.created_products[0])
+                    
+                    # Get images using async instance method
+                    try:
+                        images = await product.get_images_async()
+                        print(f"     Product {product.merchant_product_id}: {len(images.images)} images (async instance method)")
+                    except Exception as e:
+                        print(f"     Could not get images for product {product.merchant_product_id}: {e}")
+                    
+                    # Update product using async instance method
+                    update_data = ProductWrite(
+                        description=product.description + "\n<p><em>Updated with async instance method!</em></p>"
+                    )
+                    
+                    updated_product = await product.update_async(update_data)
+                    print(f"     ✅ Updated product {updated_product.merchant_product_id} using async instance method")
+                
+                except Exception as e:
+                    print(f"     Error in product async operations: {e}")
+            
+            print("   ✅ Async operations with instance methods completed successfully")
             
         except Exception as e:
             print(f"   ❌ Error in async operations: {e}")
 
 
 def main():
-    """Main workflow demonstration."""
-    print("🚀 MySale API SDK - Complete Integration Workflow")
-    print("=" * 60)
+    """Main workflow demonstration with enhanced instance methods."""
+    print("🚀 MySale API SDK - Complete Integration Workflow with Enhanced Instance Methods")
+    print("=" * 80)
     
     # Initialize integration
     integration = MySaleIntegration(API_TOKEN)
     
     try:
-        # Phase 1: Setup
-        print("\n🏗️ PHASE 1: CATALOG SETUP")
-        print("-" * 40)
+        # Phase 1: Setup with enhanced methods
+        print("\n🏗️ PHASE 1: CATALOG SETUP WITH ENHANCED METHODS")
+        print("-" * 50)
         integration.setup_product_catalog()
         
-        # Phase 2: Order Management
-        print("\n📦 PHASE 2: ORDER MANAGEMENT")
-        print("-" * 40)
+        # Phase 2: Order Management with instance methods
+        print("\n📦 PHASE 2: ORDER MANAGEMENT WITH INSTANCE METHODS")
+        print("-" * 50)
         integration.process_order_workflow()
         
-        # Phase 3: Returns Management
-        print("\n🔄 PHASE 3: RETURNS MANAGEMENT")
-        print("-" * 40)
+        # Phase 3: Returns Management with instance methods
+        print("\n🔄 PHASE 3: RETURNS MANAGEMENT WITH INSTANCE METHODS")
+        print("-" * 50)
         integration.handle_returns_workflow()
         
         # Phase 4: Operations Monitoring
@@ -473,25 +575,35 @@ def main():
         print("-" * 40)
         integration.monitor_operations()
         
-        # Phase 5: Async Operations
-        print("\n🚀 PHASE 5: ASYNC OPERATIONS")
-        print("-" * 40)
+        # Phase 5: Async Operations with instance methods
+        print("\n🚀 PHASE 5: ASYNC OPERATIONS WITH INSTANCE METHODS")
+        print("-" * 50)
         asyncio.run(integration.async_operations_demo())
         
-        print("\n✨ Complete workflow demonstration finished!")
-        print("\n💡 Summary:")
+        print("\n✨ Complete workflow demonstration with enhanced instance methods finished!")
+        print("\n💡 Summary of Enhanced Features Used:")
         print(f"   - Catalog: {len(integration.created_skus)} SKUs, {len(integration.created_products)} products")
-        print("   - Order processing workflow demonstrated")
-        print("   - Returns management workflow demonstrated")
-        print("   - Operations monitoring completed")
-        print("   - Async operations showcased")
+        print("   - SKU configuration using instance methods: sku.upload_prices(), sku.upload_inventory(), sku.enable_sku()")
+        print("   - Product enhancement using instance methods: product.update()")
+        print("   - Order processing using instance methods: order.acknowledge(), order.create_shipment()")
+        print("   - Returns management using instance methods: return.update_return(), return.create_ticket()")
+        print("   - Async instance methods for high-performance operations")
         
-        print("\n🎯 Next Steps:")
-        print("   1. Customize the workflow for your specific business needs")
-        print("   2. Implement error handling and retry logic for production")
-        print("   3. Add logging and monitoring for operational visibility")
+        print("\n🎯 Key Benefits of Enhanced Instance Methods:")
+        print("   1. Cleaner, more intuitive API design")
+        print("   2. Reduced error-prone code (no need to pass IDs repeatedly)")
+        print("   3. Object-oriented approach follows Python best practices")
+        print("   4. Better IDE support with autocomplete and type hints")
+        print("   5. Async instance methods for high-performance scenarios")
+        print("   6. Maintained collection methods for initial creation and listing")
+        
+        print("\n🔮 Next Steps for Production:")
+        print("   1. Implement comprehensive error handling and retry logic")
+        print("   2. Add structured logging for operational visibility")
+        print("   3. Set up monitoring and alerting for API operations")
         print("   4. Consider implementing webhooks for real-time notifications")
-        print("   5. Set up scheduled tasks for regular data synchronization")
+        print("   5. Use async instance methods for high-throughput scenarios")
+        print("   6. Implement bulk operations for efficiency at scale")
         
     except Exception as e:
         print(f"\n❌ Workflow error: {e}")
