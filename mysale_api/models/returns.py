@@ -3,7 +3,7 @@
 from typing import Dict, List, Optional, Any
 from decimal import Decimal
 from datetime import datetime
-from pydantic import BaseModel, Field, ConfigDict, validator
+from pydantic import BaseModel, Field, ConfigDict, field_validator
 from uuid import UUID
 from .order import Price, OrderItem
 
@@ -44,7 +44,7 @@ class ReturnRead(BaseModel):
     amount_to_refund: Optional[Price] = Field(None, description="The amount to refund")
     amount_refunded: Optional[Price] = Field(None, description="The actual refunded amount")
     
-    @validator('status')
+    @field_validator('status', mode='before')
     def validate_status(cls, v):
         allowed_statuses = ["pending", "approved", "received", "closed", "declined"]
         if v not in allowed_statuses:

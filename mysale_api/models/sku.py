@@ -2,7 +2,7 @@
 
 from typing import Dict, List, Optional, Any, Union
 from decimal import Decimal
-from pydantic import BaseModel, Field, ConfigDict, validator
+from pydantic import BaseModel, Field, ConfigDict, field_validator
 from uuid import UUID
 
 
@@ -25,7 +25,7 @@ class StandardProductCode(BaseModel):
     code: str = Field(..., description="Product code")
     type: str = Field(..., description="Code type: EAN, UPC, ISBN_10, ISBN_13, GTIN_14")
     
-    @validator('type')
+    @field_validator('type', mode='before')
     def validate_type(cls, v):
         allowed_types = ["EAN", "UPC", "ISBN_10", "ISBN_13", "GTIN_14"]
         if v not in allowed_types:
@@ -38,7 +38,7 @@ class ShippingCountries(BaseModel):
     excluded_countries: Optional[List[str]] = Field(None, description="List of excluded country codes")
     allowed_countries: List[str] = Field(..., description="List of allowed country codes")
     
-    @validator('allowed_countries', 'excluded_countries')
+    @field_validator('allowed_countries', 'excluded_countries')
     def validate_country_codes(cls, v):
         if v is None:
             return v
@@ -143,7 +143,7 @@ class PriceValue(BaseModel):
     currency: str = Field(..., description="Price currency")
     value: Decimal = Field(..., description="Price value")
     
-    @validator('currency')
+    @field_validator('currency')
     def validate_currency(cls, v):
         allowed_currencies = ["AUD", "NZD", "MYR", "SGD"]
         if v.upper() not in allowed_currencies:
@@ -160,7 +160,7 @@ class SKUShopPrice(BaseModel):
     currency: str = Field(..., description="Currency for this shop")
     value: Decimal = Field(..., description="Value for this shop")
     
-    @validator('shop_code')
+    @field_validator('shop_code')
     def validate_shop_code(cls, v):
         allowed_shops = ["BN", "NZ", "MY", "SI"]
         if v.upper() not in allowed_shops:

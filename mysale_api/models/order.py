@@ -3,7 +3,7 @@
 from typing import Dict, List, Optional, Any
 from decimal import Decimal
 from datetime import datetime
-from pydantic import BaseModel, Field, ConfigDict, validator
+from pydantic import BaseModel, Field, ConfigDict, field_validator
 from uuid import UUID
 
 
@@ -12,7 +12,7 @@ class Price(BaseModel):
     currency: str = Field(..., description="Alpha-3 ISO currency code")
     amount: Decimal = Field(..., description="Cost amount")
     
-    @validator('currency')
+    @field_validator('currency')
     def validate_currency(cls, v):
         allowed_currencies = ["AUD", "NZD", "MYR", "SGD"]
         if v.upper() not in allowed_currencies:
@@ -77,7 +77,7 @@ class OrderRead(BaseModel):
     shipping_policy_id: UUID = Field(..., description="The shipping policy ID")
     shipping_policy_name: str = Field(..., description="The shipping policy name")
     
-    @validator('order_status')
+    @field_validator('order_status', mode='before')
     def validate_order_status(cls, v):
         allowed_statuses = ["new", "acknowledged", "inprogress", "complete", "incomplete"]
         if v not in allowed_statuses:
@@ -167,7 +167,7 @@ class CancelledItem(BaseModel):
     sku_qty: int = Field(..., description="Quantity of this SKU to be cancelled")
     cancellation_reason: str = Field(..., description="Reason of cancellation")
     
-    @validator('cancellation_reason')
+    @field_validator('cancellation_reason', mode='before')
     def validate_cancellation_reason(cls, v):
         allowed_reasons = [
             "no_stock", "fraud_high_risk", "fraud_charge_back", "fraud_confirmed",
