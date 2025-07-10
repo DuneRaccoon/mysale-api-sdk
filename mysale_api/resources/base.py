@@ -1,6 +1,5 @@
-# resources/base.py
-
 import json
+import logging
 from typing import (
     Any, 
     Dict, 
@@ -22,6 +21,7 @@ from ..utils import clean_params, extract_items_from_response
 T = TypeVar("T", bound="MySaleResource")
 ModelT = TypeVar("ModelT", bound=BaseModel)
 
+logger = logging.getLogger(__name__)
 
 class PaginatedResponse(Generic[T]):
     """
@@ -130,6 +130,17 @@ class MySaleResource:
         """Check if this represents a specific resource instance (vs collection manager)."""
         return bool(self._data and self.get_identifier())
         
+    def _validate_data(self) -> bool:
+        """Debugging function, to check if data is valid, against its assigned model class"""
+        if self._data and self.model_class:
+            try:
+                self.model_class(**self._data)
+                return True
+            except Exception as e:
+                logger.info(f"Data validation failed: {e}", exc_info=e)
+                return False
+        return False
+        
     def _require_instance(self) -> str:
         """Ensure this is a resource instance and return its identifier."""
         if not self.is_instance():
@@ -175,11 +186,11 @@ class MySaleResource:
         instance_cls = instance_cls or self.__class__
         return instance_cls(client=self._client, data=data, parent_path=self._parent_path)
 
-    def _extract_pagination_data(self, response: Dict[str, Any], params: Dict[str, Any]) -> Dict[str, Any]:
+    def _extract_pagination_data(self, response: Union[ List[Dict[str, Any]], Dict[str, Any]], params: Dict[str, Any]) -> Dict[str, Any]:
         """Extract pagination information from a response."""
         offset = params.get('offset', 0)
         limit = params.get('limit', 50)
-        total_count = response.get('total_count')
+        total_count = response.get('total_count') if isinstance(response, dict) else len(response)
         
         # Check if there are more items
         items_count = len(extract_items_from_response(response))
@@ -225,6 +236,7 @@ class MySaleResource:
         
     def list(
         self: T,
+        url: Optional[str] = None,
         paginated: bool = False,
         **params
     ) -> Union[List[T], PaginatedResponse[T]]:
@@ -241,7 +253,7 @@ class MySaleResource:
         if not hasattr(self._client, '_make_request_sync'):
             raise TypeError("This method requires a synchronous client")
             
-        url = self._build_url()
+        url = url or self._build_url()
         prepared_params = self._prepare_request_params(params)
         response = self._client._make_request_sync("GET", url, params=prepared_params)
         
@@ -292,7 +304,7 @@ class MySaleResource:
         url = self._build_url(resource_id)
         self._client._make_request_sync("DELETE", url)
 
-    def paginate(self: T, **params) -> Generator[T, None, None]:
+    def paginate(self: T, url: Optional[str] = None, **params) -> Generator[T, None, None]:
         """
         Generator that yields all resources matching the given parameters.
         
@@ -312,7 +324,7 @@ class MySaleResource:
             params["offset"] = offset
             params["limit"] = limit
             
-            page_response = self.list(paginated=True, **params)
+            page_response = self.list(url=url, paginated=True, **params)
             
             if not isinstance(page_response, PaginatedResponse):
                 raise TypeError("Expected PaginatedResponse, got {}".format(type(page_response)))
@@ -342,6 +354,7 @@ class MySaleResource:
 
     async def list_async(
         self: T, 
+        url: Optional[str] = None,
         paginated: bool = False, 
         **params
     ) -> Union[List[T], PaginatedResponse[T]]:
@@ -357,8 +370,8 @@ class MySaleResource:
         """
         if not hasattr(self._client, '_make_request_async'):
             raise TypeError("This method requires an asynchronous client")
-            
-        url = self._build_url()
+
+        url = url or self._build_url()
         prepared_params = self._prepare_request_params(params)
         response = await self._client._make_request_async("GET", url, params=prepared_params)
         
@@ -408,7 +421,7 @@ class MySaleResource:
         url = self._build_url(resource_id)
         await self._client._make_request_async("DELETE", url)
 
-    async def paginate_async(self: T, **params) -> AsyncGenerator[T, None]:
+    async def paginate_async(self: T, url: Optional[str] = None, **params) -> AsyncGenerator[T, None]:
         """
         Async generator that yields all resources matching the given parameters.
         
@@ -428,8 +441,8 @@ class MySaleResource:
             params["offset"] = offset
             params["limit"] = limit
 
-            page_response = await self.list_async(paginated=True, **params)
-            
+            page_response = await self.list_async(url=url, paginated=True, **params)
+
             if not isinstance(page_response, PaginatedResponse):
                 raise TypeError("Expected PaginatedResponse, got {}".format(type(page_response)))
 

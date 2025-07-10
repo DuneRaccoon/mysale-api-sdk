@@ -1,6 +1,6 @@
 # resources/returns.py
 
-from typing import Dict, Any, List, Optional, Union, TYPE_CHECKING
+from typing import Dict, Any, List, Optional, Union, Generator, AsyncGenerator, TYPE_CHECKING
 
 from .base import MySaleResource, PaginatedResponse
 from ..models.returns import (
@@ -105,6 +105,11 @@ class Returns(MySaleResource):
         return_id = validate_identifier(return_id, "return_id")
         return self.get(return_id)
     
+    def paginate_returns_by_status(self, status: str, offset: int = 0, limit: int = 50) -> Generator["Returns", None, None]:
+        """Paginate through returns by status."""
+        for return_list_item in self.paginate(url=self._build_url(status), offset=offset, limit=limit):
+            yield self.get_return(return_list_item.id)
+
     def list_pending_returns(self, offset: int = 0, limit: int = 50,
                            paginated: bool = False) -> Union[List[ReturnListItem], "PaginatedResponse[ReturnListItem]"]:
         """List returns with 'pending' status."""
@@ -265,6 +270,12 @@ class Returns(MySaleResource):
         return_id = validate_identifier(return_id, "return_id")
         return await self.get_async(return_id)
     
+    async def paginate_returns_by_status_async(self, status: str, offset: int = 0, limit: int = 50) -> AsyncGenerator["Returns", None]:
+        """Paginate through returns by status asynchronously."""
+        url = self._build_url(status)
+        async for return_list_item in self.paginate_async(url=url, offset=offset, limit=limit):
+            yield await self.get_return_async(return_list_item.id)
+            
     async def list_pending_returns_async(self, offset: int = 0, limit: int = 50,
                                        paginated: bool = False) -> Union[List[ReturnListItem], "PaginatedResponse[ReturnListItem]"]:
         """List pending returns asynchronously."""

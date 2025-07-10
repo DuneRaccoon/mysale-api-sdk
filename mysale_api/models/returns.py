@@ -1,6 +1,6 @@
 # models/returns.py
 
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional, Any, Union
 from decimal import Decimal
 from datetime import datetime
 from pydantic import BaseModel, Field, ConfigDict, field_validator
@@ -29,7 +29,7 @@ class ReturnRead(BaseModel):
     ran: str = Field(..., description="The return RAN")
     merchant_return_id: Optional[str] = Field(None, description="The return ID assigned by merchant")
     order_id: Optional[UUID] = Field(None, description="The unique MySale Order ID")
-    customer_order_reference: Optional[str] = Field(None, description="The customer order reference")
+    customer_order_reference: Optional[Union[str, int]] = Field(None, description="The customer order reference")
     status: str = Field(..., description="The return status")
     reason_for_return: Optional[str] = Field(None, description="The customer's reason of return")
     sale_id: Optional[UUID] = Field(None, description="The unique MySale Sale ID")
@@ -58,7 +58,7 @@ class ReturnListItem(BaseModel):
     ran: str = Field(..., description="The return RAN")
     merchant_return_id: Optional[str] = Field(None, description="The return ID assigned by merchant")
     customer: Customer = Field(..., description="The customer info")
-    customer_order_reference: Optional[str] = Field(None, description="The customer order reference")
+    customer_order_reference: Optional[Union[str, int]] = Field(None, description="The customer order reference")
     status: str = Field(..., description="The return status")
 
 

@@ -1,4 +1,5 @@
 import re
+from uuid import UUID
 from typing import Any, Dict, List, Optional, Union, Generator
 from urllib.parse import urlencode
 
@@ -50,8 +51,12 @@ def build_query_string(params: Dict[str, Any]) -> str:
     return "?" + "&".join(query_parts) if query_parts else ""
 
 
-def validate_identifier(identifier: str, identifier_type: str = "identifier") -> str:
+def validate_identifier(identifier: Union[str, UUID], identifier_type: str = "identifier") -> str:
     """Validate and clean an identifier for use in API calls."""
+    if isinstance(identifier, UUID):
+        # If it's a UUID, convert to string
+        identifier = str(identifier)
+        
     if not identifier or not isinstance(identifier, str):
         raise ValueError(f"Invalid {identifier_type}: must be a non-empty string")
     

@@ -15,7 +15,7 @@ from datetime import datetime, timedelta
 from uuid import UUID
 
 from mysale_api import MySaleClient, MySaleAsyncClient
-from mysale_api.models import (
+from mysale_api.models.order import (
     OrderAcknowledgement, AcknowledgementOrderItem,
     ShipmentCreate, ShipmentItem,
     CancellationCreate, CancelledItem

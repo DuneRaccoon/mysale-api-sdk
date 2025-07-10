@@ -60,7 +60,7 @@ class OrderItem(BaseModel):
     sku_qty: int = Field(..., description="Quantity of this SKU")
     item_cost_price: Price = Field(..., description="Price the Merchant sets")
     item_sell_price: Price = Field(..., description="Price the customer pays")
-    item_shipping_price: Price = Field(..., description="Price of delivery")
+    item_shipping_price: Optional[Price] = Field(None, description="Price of delivery")
 
 
 class OrderRead(BaseModel):

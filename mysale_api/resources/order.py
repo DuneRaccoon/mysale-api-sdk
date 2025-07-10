@@ -1,6 +1,6 @@
 # resources/order.py
 
-from typing import Dict, Any, List, Optional, Union, TYPE_CHECKING
+from typing import Dict, Any, List, Optional, Union, Generator, AsyncGenerator, TYPE_CHECKING
 from uuid import UUID
 
 from .base import MySaleResource, PaginatedResponse
@@ -97,6 +97,11 @@ class Order(MySaleResource):
         order_id = validate_identifier(order_id, "order_id")
         return self.get(order_id)
     
+    def paginate_orders_by_status(self, status: str, offset: int = 0, limit: int = 50) -> Generator["Order", None, None]:
+        """Paginate through orders by status."""
+        for order_list_item in self.paginate(url=self._build_url(status), offset=offset, limit=limit):
+            yield self.get_order(order_list_item.order_id)
+
     def list_new_orders(self, offset: int = 0, limit: int = 50, 
                        paginated: bool = False) -> Union[List[OrderListItem], "PaginatedResponse[OrderListItem]"]:
         """List orders with 'new' status."""
@@ -272,6 +277,12 @@ class Order(MySaleResource):
         """Get a specific order by ID asynchronously."""
         order_id = validate_identifier(order_id, "order_id")
         return await self.get_async(order_id)
+    
+    async def paginate_orders_by_status_async(self, status: str, offset: int = 0, limit: int = 50) -> AsyncGenerator["Order", None]:
+        """Paginate through orders by status asynchronously."""
+        url = self._build_url(status)
+        async for order_list_item in self.paginate_async(url=url, offset=offset, limit=limit):
+            yield await self.get_order_async(order_list_item.order_id)
     
     async def list_new_orders_async(self, offset: int = 0, limit: int = 50,
                                    paginated: bool = False) -> Union[List[OrderListItem], "PaginatedResponse[OrderListItem]"]:
