@@ -120,11 +120,24 @@ class MySaleResource:
     def get_identifier(self) -> Optional[str]:
         """Get the identifier for this resource."""
         # Try common identifier fields used in MySale
-        for field in ['merchant_sku_id', 'merchant_product_id', 'sku_id', 'product_id', 'branch_id', 'id']:
+        for field in ['merchant_sku_id', 'merchant_product_id', 'sku_id', 'product_id', 'branch_id', 'id', 'order_id', 'return_id']:
             value = self._data.get(field)
             if value:
                 return str(value)
         return None
+        
+    def is_instance(self) -> bool:
+        """Check if this represents a specific resource instance (vs collection manager)."""
+        return bool(self._data and self.get_identifier())
+        
+    def _require_instance(self) -> str:
+        """Ensure this is a resource instance and return its identifier."""
+        if not self.is_instance():
+            raise ValueError(f"This method requires a {self.__class__.__name__} instance, not a collection manager")
+        identifier = self.get_identifier()
+        if not identifier:
+            raise ValueError(f"Could not determine identifier for {self.__class__.__name__} instance")
+        return identifier
         
     @classmethod
     def get_endpoint(cls) -> str:

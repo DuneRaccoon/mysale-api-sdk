@@ -24,7 +24,81 @@ class Returns(MySaleResource):
     endpoint = "returns"
     model_class = ReturnRead
     
-    # Synchronous methods
+    # Instance methods (work when this represents a specific return)
+    
+    def update_return(self, update_data: Union[Dict[str, Any], ReturnUpdate]) -> "Returns":
+        """Update this return."""
+        return_id = self._require_instance()
+        return self.update_return_by_id(return_id, update_data)
+    
+    def approve(self) -> "Returns":
+        """Approve this return."""
+        return_id = self._require_instance()
+        return self.approve_return(return_id)
+    
+    def decline(self) -> "Returns":
+        """Decline this return."""
+        return_id = self._require_instance()
+        return self.decline_return(return_id)
+    
+    def receive(self) -> "Returns":
+        """Mark this return as received."""
+        return_id = self._require_instance()
+        return self.receive_return(return_id)
+    
+    def reopen(self) -> "Returns":
+        """Reopen this return."""
+        return_id = self._require_instance()
+        return self.reopen_return(return_id)
+    
+    def full_refund(self) -> "Returns":
+        """Fully refund this return."""
+        return_id = self._require_instance()
+        return self.full_refund_return(return_id)
+    
+    def partial_refund(self, refund_data: Union[Dict[str, Any], PartialRefund]) -> "Returns":
+        """Partially refund this return."""
+        return_id = self._require_instance()
+        return self.partial_refund_return(return_id, refund_data)
+    
+    def get_tickets(self) -> List[TicketListItem]:
+        """Get all tickets for this return."""
+        return_id = self._require_instance()
+        return self.get_return_tickets(return_id)
+    
+    def create_ticket(self, ticket_data: Union[Dict[str, Any], TicketCreate]) -> TicketRead:
+        """Create a ticket for this return."""
+        return_id = self._require_instance()
+        return self.create_ticket_from_return(return_id, ticket_data)
+    
+    # Async instance methods
+    
+    async def update_return_async(self, update_data: Union[Dict[str, Any], ReturnUpdate]) -> "Returns":
+        """Update this return asynchronously."""
+        return_id = self._require_instance()
+        return await self.update_return_by_id_async(return_id, update_data)
+    
+    async def approve_async(self) -> "Returns":
+        """Approve this return asynchronously."""
+        return_id = self._require_instance()
+        return await self.approve_return_async(return_id)
+    
+    async def decline_async(self) -> "Returns":
+        """Decline this return asynchronously."""
+        return_id = self._require_instance()
+        return await self.decline_return_async(return_id)
+    
+    async def full_refund_async(self) -> "Returns":
+        """Fully refund this return asynchronously."""
+        return_id = self._require_instance()
+        return await self.full_refund_return_async(return_id)
+    
+    async def partial_refund_async(self, refund_data: Union[Dict[str, Any], PartialRefund]) -> "Returns":
+        """Partially refund this return asynchronously."""
+        return_id = self._require_instance()
+        return await self.partial_refund_return_async(return_id, refund_data)
+    
+    # Collection management methods (work when this is a collection manager)
     
     def get_return(self, return_id: str) -> "Returns":
         """Get a specific return by ID."""
@@ -93,7 +167,7 @@ class Returns(MySaleResource):
         
         return return_items
     
-    def update_return(self, return_id: str, update_data: Union[Dict[str, Any], ReturnUpdate]) -> "Returns":
+    def update_return_by_id(self, return_id: str, update_data: Union[Dict[str, Any], ReturnUpdate]) -> "Returns":
         """Update a return."""
         return_id = validate_identifier(return_id, "return_id")
         
@@ -184,7 +258,7 @@ class Returns(MySaleResource):
         
         return TicketRead(**response)
     
-    # Asynchronous methods
+    # Asynchronous collection methods
     
     async def get_return_async(self, return_id: str) -> "Returns":
         """Get a specific return by ID asynchronously."""
@@ -253,7 +327,7 @@ class Returns(MySaleResource):
         
         return return_items
     
-    async def update_return_async(self, return_id: str, update_data: Union[Dict[str, Any], ReturnUpdate]) -> "Returns":
+    async def update_return_by_id_async(self, return_id: str, update_data: Union[Dict[str, Any], ReturnUpdate]) -> "Returns":
         """Update a return asynchronously."""
         return_id = validate_identifier(return_id, "return_id")
         

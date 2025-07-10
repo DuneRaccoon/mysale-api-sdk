@@ -20,7 +20,31 @@ class Product(MySaleResource):
     endpoint = "merchant-products"
     model_class = ProductRead
     
-    # Synchronous methods
+    # Instance methods (work when this represents a specific product)
+    
+    def update(self, data: Union[Dict[str, Any], ProductWrite]) -> "Product":
+        """Update this product."""
+        merchant_product_id = self._require_instance()
+        return self.update_by_merchant_id(merchant_product_id, data)
+    
+    def get_images(self) -> ProductImages:
+        """Get images for this product."""
+        merchant_product_id = self._require_instance()
+        return self.get_images_for_product(merchant_product_id)
+    
+    # Async instance methods
+    
+    async def update_async(self, data: Union[Dict[str, Any], ProductWrite]) -> "Product":
+        """Update this product asynchronously."""
+        merchant_product_id = self._require_instance()
+        return await self.update_by_merchant_id_async(merchant_product_id, data)
+    
+    async def get_images_async(self) -> ProductImages:
+        """Get images for this product asynchronously."""
+        merchant_product_id = self._require_instance()
+        return await self.get_images_for_product_async(merchant_product_id)
+    
+    # Collection management methods (work when this is a collection manager)
     
     def get_by_merchant_id(self, merchant_product_id: str) -> "Product":
         """Get a product by its merchant product ID."""
@@ -62,7 +86,7 @@ class Product(MySaleResource):
         
         return self._create_instance(response)
     
-    def get_images(self, merchant_product_id: str) -> ProductImages:
+    def get_images_for_product(self, merchant_product_id: str) -> ProductImages:
         """Get images for a product."""
         merchant_product_id = validate_identifier(merchant_product_id, "merchant_product_id")
         
@@ -84,7 +108,7 @@ class Product(MySaleResource):
         
         return self.list(paginated=paginated, **params)
     
-    # Asynchronous methods
+    # Asynchronous collection methods
     
     async def get_by_merchant_id_async(self, merchant_product_id: str) -> "Product":
         """Get a product by its merchant product ID asynchronously."""
@@ -125,7 +149,7 @@ class Product(MySaleResource):
         
         return self._create_instance(response)
     
-    async def get_images_async(self, merchant_product_id: str) -> ProductImages:
+    async def get_images_for_product_async(self, merchant_product_id: str) -> ProductImages:
         """Get images for a product asynchronously."""
         merchant_product_id = validate_identifier(merchant_product_id, "merchant_product_id")
         

@@ -2,6 +2,7 @@
 
 from typing import Dict, Any, List, Optional, Union, TYPE_CHECKING
 import json
+import asyncio
 
 from .base import MySaleResource
 from ..models.sku import (
@@ -24,7 +25,91 @@ class SKU(MySaleResource):
     endpoint = "merchant-skus"
     model_class = SKURead
     
-    # Synchronous methods
+    # Instance methods (work when this represents a specific SKU)
+    
+    def update(self, data: Union[Dict[str, Any], SKUWrite]) -> "SKU":
+        """Update this SKU instance."""
+        merchant_sku_id = self._require_instance()
+        return self.update_by_merchant_id(merchant_sku_id, data)
+    
+    def enable_sku(self) -> None:
+        """Enable this SKU for sale."""
+        merchant_sku_id = self._require_instance()
+        self.enable(merchant_sku_id)
+    
+    def disable_sku(self) -> None:
+        """Disable this SKU for sale."""
+        merchant_sku_id = self._require_instance()
+        self.disable(merchant_sku_id)
+    
+    def unarchive_sku(self) -> None:
+        """Unarchive this SKU for sale."""
+        merchant_sku_id = self._require_instance()
+        self.unarchive(merchant_sku_id)
+    
+    def upload_images(self, images: Union[Dict[str, Any], SKUImages]) -> SKUImages:
+        """Upload images for this SKU."""
+        merchant_sku_id = self._require_instance()
+        return self.upload_images_for_sku(merchant_sku_id, images)
+    
+    def get_images(self) -> SKUImages:
+        """Get images for this SKU."""
+        merchant_sku_id = self._require_instance()
+        return self.get_images_for_sku(merchant_sku_id)
+    
+    def upload_prices(self, prices: Union[Dict[str, Any], SKUPrices]) -> SKUPrices:
+        """Upload prices for this SKU."""
+        merchant_sku_id = self._require_instance()
+        return self.upload_prices_for_sku(merchant_sku_id, prices)
+    
+    def get_prices(self) -> SKUPrices:
+        """Get prices for this SKU."""
+        merchant_sku_id = self._require_instance()
+        return self.get_prices_for_sku(merchant_sku_id)
+    
+    def upload_inventory(self, inventory: Union[Dict[str, Any], SKUInventory]) -> SKUInventory:
+        """Upload inventory for this SKU."""
+        merchant_sku_id = self._require_instance()
+        return self.upload_inventory_for_sku(merchant_sku_id, inventory)
+    
+    def get_inventory(self) -> SKUInventory:
+        """Get inventory for this SKU."""
+        merchant_sku_id = self._require_instance()
+        return self.get_inventory_for_sku(merchant_sku_id)
+    
+    def upload_attributes(self, attributes: Union[Dict[str, Any], SKUAttributes]) -> SKUAttributes:
+        """Upload attributes for this SKU."""
+        merchant_sku_id = self._require_instance()
+        return self.upload_attributes_for_sku(merchant_sku_id, attributes)
+    
+    # Async instance methods
+    
+    async def update_async(self, data: Union[Dict[str, Any], SKUWrite]) -> "SKU":
+        """Update this SKU instance asynchronously."""
+        merchant_sku_id = self._require_instance()
+        return await self.update_by_merchant_id_async(merchant_sku_id, data)
+    
+    async def enable_sku_async(self) -> None:
+        """Enable this SKU for sale asynchronously."""
+        merchant_sku_id = self._require_instance()
+        await self.enable_async(merchant_sku_id)
+    
+    async def disable_sku_async(self) -> None:
+        """Disable this SKU for sale asynchronously."""
+        merchant_sku_id = self._require_instance()
+        await self.disable_async(merchant_sku_id)
+    
+    async def upload_prices_async(self, prices: Union[Dict[str, Any], SKUPrices]) -> SKUPrices:
+        """Upload prices for this SKU asynchronously."""
+        merchant_sku_id = self._require_instance()
+        return await self.upload_prices_for_sku_async(merchant_sku_id, prices)
+    
+    async def upload_inventory_async(self, inventory: Union[Dict[str, Any], SKUInventory]) -> SKUInventory:
+        """Upload inventory for this SKU asynchronously."""
+        merchant_sku_id = self._require_instance()
+        return await self.upload_inventory_for_sku_async(merchant_sku_id, inventory)
+    
+    # Collection management methods (work when this is a collection manager)
     
     def get_by_merchant_id(self, merchant_sku_id: str) -> "SKU":
         """Get a SKU by its merchant SKU ID."""
@@ -98,7 +183,7 @@ class SKU(MySaleResource):
     
     # Image management
     
-    def upload_images(self, merchant_sku_id: str, images: Union[Dict[str, Any], SKUImages]) -> SKUImages:
+    def upload_images_for_sku(self, merchant_sku_id: str, images: Union[Dict[str, Any], SKUImages]) -> SKUImages:
         """Upload images for a SKU."""
         merchant_sku_id = validate_merchant_sku_id(merchant_sku_id)
         
@@ -111,7 +196,7 @@ class SKU(MySaleResource):
         
         return SKUImages(**response)
     
-    def get_images(self, merchant_sku_id: str) -> SKUImages:
+    def get_images_for_sku(self, merchant_sku_id: str) -> SKUImages:
         """Get images for a SKU."""
         merchant_sku_id = validate_merchant_sku_id(merchant_sku_id)
         
@@ -125,7 +210,7 @@ class SKU(MySaleResource):
     
     # Price management
     
-    def upload_prices(self, merchant_sku_id: str, prices: Union[Dict[str, Any], SKUPrices]) -> SKUPrices:
+    def upload_prices_for_sku(self, merchant_sku_id: str, prices: Union[Dict[str, Any], SKUPrices]) -> SKUPrices:
         """Upload prices for a SKU."""
         merchant_sku_id = validate_merchant_sku_id(merchant_sku_id)
         
@@ -138,7 +223,7 @@ class SKU(MySaleResource):
         
         return SKUPrices(**response)
     
-    def get_prices(self, merchant_sku_id: str) -> SKUPrices:
+    def get_prices_for_sku(self, merchant_sku_id: str) -> SKUPrices:
         """Get prices for a SKU."""
         merchant_sku_id = validate_merchant_sku_id(merchant_sku_id)
         
@@ -152,7 +237,7 @@ class SKU(MySaleResource):
     
     # Inventory management
     
-    def upload_inventory(self, merchant_sku_id: str, inventory: Union[Dict[str, Any], SKUInventory]) -> SKUInventory:
+    def upload_inventory_for_sku(self, merchant_sku_id: str, inventory: Union[Dict[str, Any], SKUInventory]) -> SKUInventory:
         """Upload inventory for a SKU."""
         merchant_sku_id = validate_merchant_sku_id(merchant_sku_id)
         
@@ -165,7 +250,7 @@ class SKU(MySaleResource):
         
         return SKUInventory(**response)
     
-    def get_inventory(self, merchant_sku_id: str) -> SKUInventory:
+    def get_inventory_for_sku(self, merchant_sku_id: str) -> SKUInventory:
         """Get inventory for a SKU."""
         merchant_sku_id = validate_merchant_sku_id(merchant_sku_id)
         
@@ -177,9 +262,71 @@ class SKU(MySaleResource):
         
         return SKUInventory(**response)
     
+    # Bulk inventory operations
+    
+    def bulk_update_inventory(self, inventory_updates: Dict[str, Union[Dict[str, Any], SKUInventory]]) -> Dict[str, Union[SKUInventory, Exception]]:
+        """
+        Bulk update inventory for multiple SKUs synchronously.
+        
+        Args:
+            inventory_updates: Dict mapping merchant_sku_id to inventory data
+            
+        Returns:
+            Dict mapping merchant_sku_id to either SKUInventory (success) or Exception (failure)
+        """
+        if not hasattr(self._client, '_make_request_sync'):
+            raise TypeError("This method requires a synchronous client")
+        
+        results = {}
+        
+        for merchant_sku_id, inventory_data in inventory_updates.items():
+            try:
+                result = self.upload_inventory_for_sku(merchant_sku_id, inventory_data)
+                results[merchant_sku_id] = result
+            except Exception as e:
+                results[merchant_sku_id] = e
+                
+        return results
+    
+    async def bulk_update_inventory_async(
+        self, 
+        inventory_updates: Dict[str, Union[Dict[str, Any], SKUInventory]],
+        max_concurrent: int = 10
+    ) -> Dict[str, Union[SKUInventory, Exception]]:
+        """
+        Bulk update inventory for multiple SKUs asynchronously.
+        
+        Args:
+            inventory_updates: Dict mapping merchant_sku_id to inventory data
+            max_concurrent: Maximum number of concurrent requests
+            
+        Returns:
+            Dict mapping merchant_sku_id to either SKUInventory (success) or Exception (failure)
+        """
+        if not hasattr(self._client, '_make_request_async'):
+            raise TypeError("This method requires an asynchronous client")
+        
+        semaphore = asyncio.Semaphore(max_concurrent)
+        
+        async def update_single_inventory(merchant_sku_id: str, inventory_data):
+            async with semaphore:
+                try:
+                    result = await self.upload_inventory_for_sku_async(merchant_sku_id, inventory_data)
+                    return merchant_sku_id, result
+                except Exception as e:
+                    return merchant_sku_id, e
+        
+        tasks = [
+            update_single_inventory(merchant_sku_id, inventory_data)
+            for merchant_sku_id, inventory_data in inventory_updates.items()
+        ]
+        
+        results = await asyncio.gather(*tasks)
+        return dict(results)
+    
     # Attributes management
     
-    def upload_attributes(self, merchant_sku_id: str, attributes: Union[Dict[str, Any], SKUAttributes]) -> SKUAttributes:
+    def upload_attributes_for_sku(self, merchant_sku_id: str, attributes: Union[Dict[str, Any], SKUAttributes]) -> SKUAttributes:
         """Upload attributes for a SKU."""
         merchant_sku_id = validate_merchant_sku_id(merchant_sku_id)
         
@@ -220,7 +367,7 @@ class SKU(MySaleResource):
         
         return self.list(paginated=paginated, **params)
     
-    # Asynchronous methods
+    # Asynchronous collection methods
     
     async def get_by_merchant_id_async(self, merchant_sku_id: str) -> "SKU":
         """Get a SKU by its merchant SKU ID asynchronously."""
@@ -293,7 +440,7 @@ class SKU(MySaleResource):
     
     # Async image management
     
-    async def upload_images_async(self, merchant_sku_id: str, images: Union[Dict[str, Any], SKUImages]) -> SKUImages:
+    async def upload_images_for_sku_async(self, merchant_sku_id: str, images: Union[Dict[str, Any], SKUImages]) -> SKUImages:
         """Upload images for a SKU asynchronously."""
         merchant_sku_id = validate_merchant_sku_id(merchant_sku_id)
         
@@ -306,7 +453,7 @@ class SKU(MySaleResource):
         
         return SKUImages(**response)
     
-    async def get_images_async(self, merchant_sku_id: str) -> SKUImages:
+    async def get_images_for_sku_async(self, merchant_sku_id: str) -> SKUImages:
         """Get images for a SKU asynchronously."""
         merchant_sku_id = validate_merchant_sku_id(merchant_sku_id)
         
@@ -320,7 +467,7 @@ class SKU(MySaleResource):
     
     # Async price management
     
-    async def upload_prices_async(self, merchant_sku_id: str, prices: Union[Dict[str, Any], SKUPrices]) -> SKUPrices:
+    async def upload_prices_for_sku_async(self, merchant_sku_id: str, prices: Union[Dict[str, Any], SKUPrices]) -> SKUPrices:
         """Upload prices for a SKU asynchronously."""
         merchant_sku_id = validate_merchant_sku_id(merchant_sku_id)
         
@@ -333,7 +480,7 @@ class SKU(MySaleResource):
         
         return SKUPrices(**response)
     
-    async def get_prices_async(self, merchant_sku_id: str) -> SKUPrices:
+    async def get_prices_for_sku_async(self, merchant_sku_id: str) -> SKUPrices:
         """Get prices for a SKU asynchronously."""
         merchant_sku_id = validate_merchant_sku_id(merchant_sku_id)
         
@@ -347,7 +494,7 @@ class SKU(MySaleResource):
     
     # Async inventory management
     
-    async def upload_inventory_async(self, merchant_sku_id: str, inventory: Union[Dict[str, Any], SKUInventory]) -> SKUInventory:
+    async def upload_inventory_for_sku_async(self, merchant_sku_id: str, inventory: Union[Dict[str, Any], SKUInventory]) -> SKUInventory:
         """Upload inventory for a SKU asynchronously."""
         merchant_sku_id = validate_merchant_sku_id(merchant_sku_id)
         
@@ -360,7 +507,7 @@ class SKU(MySaleResource):
         
         return SKUInventory(**response)
     
-    async def get_inventory_async(self, merchant_sku_id: str) -> SKUInventory:
+    async def get_inventory_for_sku_async(self, merchant_sku_id: str) -> SKUInventory:
         """Get inventory for a SKU asynchronously."""
         merchant_sku_id = validate_merchant_sku_id(merchant_sku_id)
         
@@ -374,7 +521,7 @@ class SKU(MySaleResource):
     
     # Async attributes management
     
-    async def upload_attributes_async(self, merchant_sku_id: str, attributes: Union[Dict[str, Any], SKUAttributes]) -> SKUAttributes:
+    async def upload_attributes_for_sku_async(self, merchant_sku_id: str, attributes: Union[Dict[str, Any], SKUAttributes]) -> SKUAttributes:
         """Upload attributes for a SKU asynchronously."""
         merchant_sku_id = validate_merchant_sku_id(merchant_sku_id)
         

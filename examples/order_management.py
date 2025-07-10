@@ -4,9 +4,9 @@ Example: Order Management with the MySale API SDK
 
 This example demonstrates how to:
 1. Retrieve and process new orders
-2. Acknowledge orders
-3. Create shipments
-4. Handle cancellations
+2. Acknowledge orders using instance methods
+3. Create shipments using instance methods
+4. Handle cancellations using instance methods
 5. Track order lifecycle
 """
 
@@ -26,8 +26,8 @@ API_TOKEN = "your_api_token_here"
 
 
 def process_new_orders():
-    """Retrieve and process new orders."""
-    print("🔍 Processing new orders...")
+    """Retrieve and process new orders using enhanced instance methods."""
+    print("🔍 Processing new orders with instance methods...")
     
     client = MySaleClient(api_token=API_TOKEN)
     
@@ -44,7 +44,7 @@ def process_new_orders():
         
         for order_summary in new_orders[:5]:  # Process first 5 orders
             try:
-                # Get full order details
+                # Get full order details using collection method
                 order = client.orders.get_order(str(order_summary.order_id))
                 
                 print(f"\n📦 Order {order.customer_order_reference}:")
@@ -81,11 +81,9 @@ def process_new_orders():
         return []
 
 
-def acknowledge_order(order):
-    """Acknowledge an order and assign internal order ID."""
-    print(f"\n✅ Acknowledging order {order.customer_order_reference}...")
-    
-    client = MySaleClient(api_token=API_TOKEN)
+def acknowledge_order_instance_method(order):
+    """Acknowledge an order using the new instance method."""
+    print(f"\n✅ Acknowledging order using instance method: {order.customer_order_reference}...")
     
     try:
         # Create acknowledgement with internal order ID
@@ -102,21 +100,20 @@ def acknowledge_order(order):
             ]
         )
         
-        client.orders.acknowledge_order(str(order.order_id), acknowledgement)
-        print(f"✅ Order acknowledged with internal ID: {internal_order_id}")
+        # Instance method - much cleaner!
+        order.acknowledge(acknowledgement)
+        print(f"✅ Order acknowledged using instance method with internal ID: {internal_order_id}")
         
         return internal_order_id
         
     except Exception as e:
-        print(f"❌ Error acknowledging order: {e}")
+        print(f"❌ Error acknowledging order using instance method: {e}")
         return None
 
 
-def create_shipment_for_order(order, internal_order_id):
-    """Create a shipment for an order."""
-    print(f"\n📦 Creating shipment for order {order.customer_order_reference}...")
-    
-    client = MySaleClient(api_token=API_TOKEN)
+def create_shipment_instance_method(order, internal_order_id):
+    """Create a shipment for an order using the new instance method."""
+    print(f"\n📦 Creating shipment using instance method for order {order.customer_order_reference}...")
     
     try:
         # Create shipment data
@@ -142,24 +139,22 @@ def create_shipment_for_order(order, internal_order_id):
             ]
         )
         
-        # Create the shipment
-        created_shipment_id = client.orders.create_shipment(str(order.order_id), shipment)
-        print(f"✅ Shipment created with ID: {created_shipment_id}")
+        # Instance method - cleaner API!
+        created_shipment_id = order.create_shipment(shipment)
+        print(f"✅ Shipment created using instance method with ID: {created_shipment_id}")
         print(f"   Tracking number: {tracking_number}")
         print(f"   Expected delivery: {shipment.expected_delivery_date.strftime('%Y-%m-%d')}")
         
         return created_shipment_id, tracking_number
         
     except Exception as e:
-        print(f"❌ Error creating shipment: {e}")
+        print(f"❌ Error creating shipment using instance method: {e}")
         return None, None
 
 
-def handle_partial_cancellation(order):
-    """Demonstrate handling a partial order cancellation."""
-    print(f"\n❌ Creating partial cancellation for order {order.customer_order_reference}...")
-    
-    client = MySaleClient(api_token=API_TOKEN)
+def handle_partial_cancellation_instance_method(order):
+    """Demonstrate handling a partial order cancellation using instance method."""
+    print(f"\n❌ Creating partial cancellation using instance method for order {order.customer_order_reference}...")
     
     try:
         # Cancel the first item (or part of it) due to no stock
@@ -179,15 +174,54 @@ def handle_partial_cancellation(order):
                 ]
             )
             
-            cancellation_id = client.orders.create_cancellation(str(order.order_id), cancellation)
-            print(f"✅ Partial cancellation created with ID: {cancellation_id}")
+            # Instance method!
+            cancellation_id = order.create_cancellation(cancellation)
+            print(f"✅ Partial cancellation created using instance method with ID: {cancellation_id}")
             print(f"   Cancelled: {cancel_qty} × {first_item.merchant_sku_id} (No stock)")
             
             return cancellation_id
         
     except Exception as e:
-        print(f"❌ Error creating cancellation: {e}")
+        print(f"❌ Error creating cancellation using instance method: {e}")
         return None
+
+
+def get_order_details_with_shipments_instance_method(order):
+    """Get comprehensive order details using instance methods."""
+    print(f"\n🔍 Getting detailed information using instance methods for order {order.customer_order_reference}...")
+    
+    try:
+        print(f"Order {order.customer_order_reference} ({order.order_status}):")
+        
+        # Get shipments using instance method
+        try:
+            shipments = order.get_shipments()
+            print(f"   Shipments: {len(shipments.shipments)}")
+            
+            for shipment in shipments.shipments:
+                print(f"     - {shipment.merchant_shipment_id}")
+                print(f"       Tracking: {shipment.tracking_number}")
+                print(f"       Carrier: {shipment.carrier} ({shipment.carrier_shipment_method})")
+                print(f"       Items: {len(shipment.shipment_items)}")
+                
+        except Exception as e:
+            print(f"   No shipments found: {e}")
+        
+        # Get cancellations using instance method
+        try:
+            cancellations = order.get_cancellations()
+            print(f"   Cancellations: {len(cancellations.cancellations)}")
+            
+            for cancellation in cancellations.cancellations:
+                print(f"     - Cancellation ID: {cancellation.cancellation_id}")
+                for item in cancellation.cancelled_items:
+                    print(f"       {item.merchant_sku_id}: {item.sku_qty} ({item.cancellation_reason})")
+                    
+        except Exception as e:
+            print(f"   No cancellations found: {e}")
+            
+    except Exception as e:
+        print(f"❌ Error getting order details using instance methods: {e}")
 
 
 def track_order_status():
@@ -221,51 +255,9 @@ def track_order_status():
         print(f"❌ Error tracking order status: {e}")
 
 
-def get_order_details_with_shipments(order_id: str):
-    """Get comprehensive order details including shipments and cancellations."""
-    print(f"\n🔍 Getting detailed information for order {order_id}...")
-    
-    client = MySaleClient(api_token=API_TOKEN)
-    
-    try:
-        # Get order details
-        order = client.orders.get_order(order_id)
-        print(f"Order {order.customer_order_reference} ({order.order_status}):")
-        
-        # Get shipments
-        try:
-            shipments = client.orders.get_shipments(order_id)
-            print(f"   Shipments: {len(shipments.shipments)}")
-            
-            for shipment in shipments.shipments:
-                print(f"     - {shipment.merchant_shipment_id}")
-                print(f"       Tracking: {shipment.tracking_number}")
-                print(f"       Carrier: {shipment.carrier} ({shipment.carrier_shipment_method})")
-                print(f"       Items: {len(shipment.shipment_items)}")
-                
-        except Exception as e:
-            print(f"   No shipments found: {e}")
-        
-        # Get cancellations
-        try:
-            cancellations = client.orders.get_cancellations(order_id)
-            print(f"   Cancellations: {len(cancellations.cancellations)}")
-            
-            for cancellation in cancellations.cancellations:
-                print(f"     - Cancellation ID: {cancellation.cancellation_id}")
-                for item in cancellation.cancelled_items:
-                    print(f"       {item.merchant_sku_id}: {item.sku_qty} ({item.cancellation_reason})")
-                    
-        except Exception as e:
-            print(f"   No cancellations found: {e}")
-            
-    except Exception as e:
-        print(f"❌ Error getting order details: {e}")
-
-
-async def async_order_processing():
-    """Demonstrate async order processing for high-volume scenarios."""
-    print("\n🔄 Demonstrating async order processing...")
+async def async_order_processing_with_instance_methods():
+    """Demonstrate async order processing using instance methods."""
+    print("\n🔄 Demonstrating async order processing with instance methods...")
     
     client = MySaleAsyncClient(api_token=API_TOKEN)
     
@@ -284,7 +276,7 @@ async def async_order_processing():
         print(f"   Acknowledged orders: {len(ack_orders)}")
         print(f"   In-progress orders: {len(progress_orders)}")
         
-        # Process multiple orders concurrently
+        # Process multiple orders concurrently using instance methods
         if new_orders:
             order_detail_tasks = [
                 client.orders.get_order_async(str(order.order_id))
@@ -293,12 +285,45 @@ async def async_order_processing():
             
             detailed_orders = await asyncio.gather(*order_detail_tasks, return_exceptions=True)
             
-            print("\n🔍 Detailed order info:")
+            print("\n🔍 Processing orders with async instance methods:")
             for result in detailed_orders:
                 if isinstance(result, Exception):
                     print(f"   Error: {result}")
                 else:
-                    print(f"   {result.customer_order_reference}: {len(result.order_items)} items")
+                    print(f"   Order {result.customer_order_reference}: {len(result.order_items)} items")
+                    
+                    # Demonstrate async instance method
+                    try:
+                        acknowledgement = OrderAcknowledgement(
+                            merchant_order_id=f"ASYNC-{result.customer_order_reference}",
+                            order_items=[]
+                        )
+                        
+                        # Async instance method
+                        await result.acknowledge_async(acknowledgement)
+                        print(f"     ✅ Acknowledged using async instance method")
+                        
+                        # Create shipment using async instance method
+                        shipment = ShipmentCreate(
+                            merchant_shipment_id=f"ASYNC-SHIP-{result.customer_order_reference}",
+                            tracking_number=f"ASYNC{datetime.now().strftime('%H%M%S')}",
+                            carrier="Fast Delivery",
+                            shipment_items=[
+                                ShipmentItem(
+                                    merchant_sku_id=item.merchant_sku_id,
+                                    sku_id=item.sku_id,
+                                    sku_qty=item.sku_qty
+                                )
+                                for item in result.order_items
+                            ]
+                        )
+                        
+                        # Async instance method
+                        shipment_id = await result.create_shipment_async(shipment)
+                        print(f"     ✅ Created shipment using async instance method: {shipment_id}")
+                        
+                    except Exception as e:
+                        print(f"     ❌ Error in async instance methods: {e}")
     
     except Exception as e:
         print(f"❌ Async error: {e}")
@@ -307,10 +332,80 @@ async def async_order_processing():
         await client.close()
 
 
+def demonstrate_order_workflow_with_instance_methods():
+    """Demonstrate a complete order workflow using instance methods."""
+    print("\n🔄 Demonstrating complete order workflow with instance methods...")
+    
+    client = MySaleClient(api_token=API_TOKEN)
+    
+    try:
+        # Step 1: Get new orders
+        print("Step 1: Retrieving new orders...")
+        new_orders = client.orders.list_new_orders(limit=3)
+        
+        if not new_orders:
+            print("No new orders to process")
+            return
+        
+        # Step 2: Process each order using instance methods
+        for order_summary in new_orders:
+            try:
+                # Get full order instance
+                order = client.orders.get_order(str(order_summary.order_id))
+                print(f"\nProcessing order: {order.customer_order_reference}")
+                
+                # Acknowledge using instance method
+                acknowledgement = OrderAcknowledgement(
+                    merchant_order_id=f"WORKFLOW-{order.customer_order_reference}",
+                    order_items=[
+                        AcknowledgementOrderItem(
+                            order_item_id=item.order_item_id,
+                            merchant_order_item_id=f"ITEM-{i+1}"
+                        )
+                        for i, item in enumerate(order.order_items)
+                    ]
+                )
+                
+                # Instance method
+                order.acknowledge(acknowledgement)
+                print(f"   ✅ Acknowledged")
+                
+                # Create shipment using instance method
+                shipment = ShipmentCreate(
+                    merchant_shipment_id=f"WORKFLOW-SHIP-{order.customer_order_reference}",
+                    tracking_number=f"WF{datetime.now().strftime('%H%M%S')}",
+                    carrier="Standard Shipping",
+                    shipment_items=[
+                        ShipmentItem(
+                            merchant_sku_id=item.merchant_sku_id,
+                            sku_id=item.sku_id,
+                            sku_qty=item.sku_qty
+                        )
+                        for item in order.order_items
+                    ]
+                )
+                
+                # Instance method
+                shipment_id = order.create_shipment(shipment)
+                print(f"   ✅ Created shipment: {shipment_id}")
+                
+                # Get shipments to verify using instance method
+                shipments = order.get_shipments()
+                print(f"   📦 Order now has {len(shipments.shipments)} shipments")
+                
+            except Exception as e:
+                print(f"   ❌ Error processing order {order_summary.order_id}: {e}")
+        
+        print("\n🎉 Workflow demonstration completed!")
+        
+    except Exception as e:
+        print(f"❌ Error in workflow demonstration: {e}")
+
+
 def main():
     """Main example function."""
-    print("🚀 MySale API SDK - Order Management Example")
-    print("=" * 50)
+    print("🚀 MySale API SDK - Enhanced Order Management Example")
+    print("=" * 60)
     
     # Process new orders
     orders = process_new_orders()
@@ -319,26 +414,38 @@ def main():
         # Take the first order for detailed processing
         sample_order = orders[0]
         
-        # Acknowledge the order
-        internal_id = acknowledge_order(sample_order)
+        # Acknowledge the order using instance method
+        internal_id = acknowledge_order_instance_method(sample_order)
         
         if internal_id:
-            # Create shipment
-            shipment_id, tracking = create_shipment_for_order(sample_order, internal_id)
+            # Create shipment using instance method
+            shipment_id, tracking = create_shipment_instance_method(sample_order, internal_id)
             
-            # Demonstrate partial cancellation (commented out to avoid affecting real orders)
-            # handle_partial_cancellation(sample_order)
+            # Demonstrate partial cancellation using instance method (commented out to avoid affecting real orders)
+            # handle_partial_cancellation_instance_method(sample_order)
             
-            # Get detailed order information
-            get_order_details_with_shipments(str(sample_order.order_id))
+            # Get detailed order information using instance methods
+            get_order_details_with_shipments_instance_method(sample_order)
     
     # Track order statuses
     track_order_status()
     
-    # Demonstrate async processing
-    asyncio.run(async_order_processing())
+    # Demonstrate complete workflow
+    demonstrate_order_workflow_with_instance_methods()
     
-    print("\n✨ Order management example completed!")
+    # Demonstrate async processing with instance methods
+    print("\n" + "="*60)
+    print("ASYNC OPERATIONS WITH INSTANCE METHODS")
+    print("="*60)
+    asyncio.run(async_order_processing_with_instance_methods())
+    
+    print("\n✨ Enhanced order management example completed!")
+    print("\n💡 Key improvements:")
+    print("   • Instance-based methods: order.acknowledge() instead of client.orders.acknowledge_order(order_id)")
+    print("   • Cleaner shipment creation: order.create_shipment() instead of client.orders.create_shipment(order_id)")
+    print("   • Simplified cancellations: order.create_cancellation() instead of client.orders.create_cancellation(order_id)")
+    print("   • Direct access to related data: order.get_shipments() instead of client.orders.get_shipments(order_id)")
+    print("   • More intuitive API that follows object-oriented principles")
 
 
 if __name__ == "__main__":

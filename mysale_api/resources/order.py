@@ -26,7 +26,71 @@ class Order(MySaleResource):
     endpoint = "orders"
     model_class = OrderRead
     
-    # Synchronous methods
+    # Instance methods (work when this represents a specific order)
+    
+    def acknowledge(self, acknowledgement: Union[Dict[str, Any], OrderAcknowledgement]) -> None:
+        """Acknowledge this order."""
+        order_id = self._require_instance()
+        self.acknowledge_order(order_id, acknowledgement)
+    
+    def create_shipment(self, shipment: Union[Dict[str, Any], ShipmentCreate]) -> str:
+        """Create a new shipment for this order. Returns the shipment ID."""
+        order_id = self._require_instance()
+        return self.create_shipment_for_order(order_id, shipment)
+    
+    def get_shipments(self) -> ShipmentList:
+        """Get all shipments for this order."""
+        order_id = self._require_instance()
+        return self.get_shipments_for_order(order_id)
+    
+    def get_shipment(self, shipment_id: str) -> Shipment:
+        """Get a specific shipment for this order."""
+        order_id = self._require_instance()
+        return self.get_shipment_for_order(order_id, shipment_id)
+    
+    def update_shipment(self, shipment_id: str, shipment: Union[Dict[str, Any], ShipmentCreate]) -> None:
+        """Update an existing shipment for this order."""
+        order_id = self._require_instance()
+        self.update_shipment_for_order(order_id, shipment_id, shipment)
+    
+    def create_cancellation(self, cancellation: Union[Dict[str, Any], CancellationCreate]) -> str:
+        """Create a new cancellation for this order. Returns the cancellation ID."""
+        order_id = self._require_instance()
+        return self.create_cancellation_for_order(order_id, cancellation)
+    
+    def get_cancellations(self) -> CancellationList:
+        """Get all cancellations for this order."""
+        order_id = self._require_instance()
+        return self.get_cancellations_for_order(order_id)
+    
+    def get_cancellation(self, cancellation_id: str) -> Cancellation:
+        """Get a specific cancellation for this order."""
+        order_id = self._require_instance()
+        return self.get_cancellation_for_order(order_id, cancellation_id)
+    
+    # Async instance methods
+    
+    async def acknowledge_async(self, acknowledgement: Union[Dict[str, Any], OrderAcknowledgement]) -> None:
+        """Acknowledge this order asynchronously."""
+        order_id = self._require_instance()
+        await self.acknowledge_order_async(order_id, acknowledgement)
+    
+    async def create_shipment_async(self, shipment: Union[Dict[str, Any], ShipmentCreate]) -> str:
+        """Create a new shipment for this order asynchronously."""
+        order_id = self._require_instance()
+        return await self.create_shipment_for_order_async(order_id, shipment)
+    
+    async def get_shipments_async(self) -> ShipmentList:
+        """Get all shipments for this order asynchronously."""
+        order_id = self._require_instance()
+        return await self.get_shipments_for_order_async(order_id)
+    
+    async def create_cancellation_async(self, cancellation: Union[Dict[str, Any], CancellationCreate]) -> str:
+        """Create a new cancellation for this order asynchronously."""
+        order_id = self._require_instance()
+        return await self.create_cancellation_for_order_async(order_id, cancellation)
+    
+    # Collection management methods (work when this is a collection manager)
     
     def get_order(self, order_id: str) -> "Order":
         """Get a specific order by ID."""
@@ -109,7 +173,7 @@ class Order(MySaleResource):
     
     # Shipment methods
     
-    def create_shipment(self, order_id: str, shipment: Union[Dict[str, Any], ShipmentCreate]) -> str:
+    def create_shipment_for_order(self, order_id: str, shipment: Union[Dict[str, Any], ShipmentCreate]) -> str:
         """Create a new shipment for an order. Returns the shipment ID."""
         order_id = validate_identifier(order_id, "order_id")
         
@@ -123,7 +187,7 @@ class Order(MySaleResource):
         # MySale returns the shipment ID as a string
         return response if isinstance(response, str) else str(response)
     
-    def update_shipment(self, order_id: str, shipment_id: str, 
+    def update_shipment_for_order(self, order_id: str, shipment_id: str, 
                        shipment: Union[Dict[str, Any], ShipmentCreate]) -> None:
         """Update an existing shipment."""
         order_id = validate_identifier(order_id, "order_id")
@@ -136,7 +200,7 @@ class Order(MySaleResource):
         prepared_data = self._prepare_request_data(shipment)
         self._client._make_request_sync("PUT", url, json_data=prepared_data)
     
-    def get_shipments(self, order_id: str) -> ShipmentList:
+    def get_shipments_for_order(self, order_id: str) -> ShipmentList:
         """Get all shipments for an order."""
         order_id = validate_identifier(order_id, "order_id")
         
@@ -148,7 +212,7 @@ class Order(MySaleResource):
         
         return ShipmentList(**response)
     
-    def get_shipment(self, order_id: str, shipment_id: str) -> Shipment:
+    def get_shipment_for_order(self, order_id: str, shipment_id: str) -> Shipment:
         """Get a specific shipment."""
         order_id = validate_identifier(order_id, "order_id")
         shipment_id = validate_identifier(shipment_id, "shipment_id")
@@ -163,7 +227,7 @@ class Order(MySaleResource):
     
     # Cancellation methods
     
-    def create_cancellation(self, order_id: str, cancellation: Union[Dict[str, Any], CancellationCreate]) -> str:
+    def create_cancellation_for_order(self, order_id: str, cancellation: Union[Dict[str, Any], CancellationCreate]) -> str:
         """Create a new cancellation for an order. Returns the cancellation ID."""
         order_id = validate_identifier(order_id, "order_id")
         
@@ -177,7 +241,7 @@ class Order(MySaleResource):
         # MySale returns the cancellation ID as a string
         return response if isinstance(response, str) else str(response)
     
-    def get_cancellations(self, order_id: str) -> CancellationList:
+    def get_cancellations_for_order(self, order_id: str) -> CancellationList:
         """Get all cancellations for an order."""
         order_id = validate_identifier(order_id, "order_id")
         
@@ -189,7 +253,7 @@ class Order(MySaleResource):
         
         return CancellationList(**response)
     
-    def get_cancellation(self, order_id: str, cancellation_id: str) -> Cancellation:
+    def get_cancellation_for_order(self, order_id: str, cancellation_id: str) -> Cancellation:
         """Get a specific cancellation."""
         order_id = validate_identifier(order_id, "order_id")
         cancellation_id = validate_identifier(cancellation_id, "cancellation_id")
@@ -202,7 +266,7 @@ class Order(MySaleResource):
         
         return Cancellation(**response)
     
-    # Asynchronous methods
+    # Asynchronous collection methods
     
     async def get_order_async(self, order_id: str) -> "Order":
         """Get a specific order by ID asynchronously."""
@@ -285,7 +349,7 @@ class Order(MySaleResource):
     
     # Async shipment methods
     
-    async def create_shipment_async(self, order_id: str, shipment: Union[Dict[str, Any], ShipmentCreate]) -> str:
+    async def create_shipment_for_order_async(self, order_id: str, shipment: Union[Dict[str, Any], ShipmentCreate]) -> str:
         """Create a new shipment for an order asynchronously."""
         order_id = validate_identifier(order_id, "order_id")
         
@@ -298,7 +362,7 @@ class Order(MySaleResource):
         
         return response if isinstance(response, str) else str(response)
     
-    async def update_shipment_async(self, order_id: str, shipment_id: str,
+    async def update_shipment_for_order_async(self, order_id: str, shipment_id: str,
                                    shipment: Union[Dict[str, Any], ShipmentCreate]) -> None:
         """Update an existing shipment asynchronously."""
         order_id = validate_identifier(order_id, "order_id")
@@ -311,7 +375,7 @@ class Order(MySaleResource):
         prepared_data = self._prepare_request_data(shipment)
         await self._client._make_request_async("PUT", url, json_data=prepared_data)
     
-    async def get_shipments_async(self, order_id: str) -> ShipmentList:
+    async def get_shipments_for_order_async(self, order_id: str) -> ShipmentList:
         """Get all shipments for an order asynchronously."""
         order_id = validate_identifier(order_id, "order_id")
         
@@ -323,7 +387,7 @@ class Order(MySaleResource):
         
         return ShipmentList(**response)
     
-    async def get_shipment_async(self, order_id: str, shipment_id: str) -> Shipment:
+    async def get_shipment_for_order_async(self, order_id: str, shipment_id: str) -> Shipment:
         """Get a specific shipment asynchronously."""
         order_id = validate_identifier(order_id, "order_id")
         shipment_id = validate_identifier(shipment_id, "shipment_id")
@@ -338,7 +402,7 @@ class Order(MySaleResource):
     
     # Async cancellation methods
     
-    async def create_cancellation_async(self, order_id: str, cancellation: Union[Dict[str, Any], CancellationCreate]) -> str:
+    async def create_cancellation_for_order_async(self, order_id: str, cancellation: Union[Dict[str, Any], CancellationCreate]) -> str:
         """Create a new cancellation for an order asynchronously."""
         order_id = validate_identifier(order_id, "order_id")
         
@@ -351,7 +415,7 @@ class Order(MySaleResource):
         
         return response if isinstance(response, str) else str(response)
     
-    async def get_cancellations_async(self, order_id: str) -> CancellationList:
+    async def get_cancellations_for_order_async(self, order_id: str) -> CancellationList:
         """Get all cancellations for an order asynchronously."""
         order_id = validate_identifier(order_id, "order_id")
         
@@ -363,7 +427,7 @@ class Order(MySaleResource):
         
         return CancellationList(**response)
     
-    async def get_cancellation_async(self, order_id: str, cancellation_id: str) -> Cancellation:
+    async def get_cancellation_for_order_async(self, order_id: str, cancellation_id: str) -> Cancellation:
         """Get a specific cancellation asynchronously."""
         order_id = validate_identifier(order_id, "order_id")
         cancellation_id = validate_identifier(cancellation_id, "cancellation_id")
